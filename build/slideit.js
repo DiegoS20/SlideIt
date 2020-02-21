@@ -24,12 +24,7 @@ function () {
       width: '100%',
       height: '35vh',
       minHeight: '150px',
-      overflow: 'hidden',
-      transition: "all 0.3s ease",
-      webkitTransition: "all 0.3s ease",
-      mozTransition: "all 0.3s ease",
-      msTransition: "all 0.3s ease",
-      oTransition: "all 0.3s ease"
+      overflow: 'hidden'
     });
 
     if (this.container === null) {
@@ -42,9 +37,11 @@ function () {
     if (children.length > 0) {
       if (Object.keys(options).length > 0) {
         this.coupleOptions(options);
+        this.execFunctionOfValuesChanged(this.options);
       }
 
       this.createSlides(children);
+      this.animateSlides(children);
     }
   }
 
@@ -85,6 +82,7 @@ function () {
           }
 
           this.modifyCSS(child, cssStyles);
+          this.setAnimationPower(child, 0.3);
         }
       } catch (err) {
         _didIteratorError = true;
@@ -122,12 +120,77 @@ function () {
       }
     }
   }, {
-    key: "modifyCSS",
-    value: function modifyCSS(element, css) {
-      for (var key in css) {
-        var value = css[key];
-        element.style[key] = value;
+    key: "animateSlides",
+    value: function animateSlides(slides) {
+      var _this = this;
+
+      var time = this.options[5].value * 1000;
+      this.animateInterval = setInterval(function () {
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = slides[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var slide = _step2.value;
+            var slideCSS = slide.style;
+            var leftValue = slideCSS.left == "" ? 0 : parseInt(slideCSS.left);
+
+            if (leftValue < 0) {
+              _this.setAnimationPower(slide, 0);
+
+              _this.modifyCSS(slide, {
+                left: "".concat(100 * (slides.length - 2), "%")
+              });
+
+              _this.setAnimationPower(slide, 0.3);
+
+              continue;
+            }
+
+            var position = leftValue;
+            slideCSS.left = "".concat(position - 100, "%");
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+              _iterator2["return"]();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+      }, time);
+    }
+  }, {
+    key: "stopSlidesAnimation",
+    value: function stopSlidesAnimation() {
+      clearInterval(this.animateInterval);
+    }
+  }, {
+    key: "execFunctionOfValuesChanged",
+    value: function execFunctionOfValuesChanged(options) {
+      var ops = this.valuesChangedByUser(options);
+      ops.forEach(function (op) {
+        op.onValueChanged(op.value);
+      });
+    }
+  }, {
+    key: "valuesChangedByUser",
+    value: function valuesChangedByUser(options) {
+      var r = [];
+
+      for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        if (option.changedByUser) r.push(option);
       }
+
+      return r;
     }
   }, {
     key: "declareInitialOptions",
@@ -148,7 +211,36 @@ function () {
         name: "slidesControls",
         value: 'default',
         changedByUser: false
+      }, {
+        name: "animateByItself",
+        value: true,
+        changedByUser: false,
+        onValueChanged: function onValueChanged(newValue) {}
+      }, {
+        name: "animationIntervalTime",
+        value: 3,
+        changedByUser: false
       }];
+    } // Auxiliar functions
+
+  }, {
+    key: "modifyCSS",
+    value: function modifyCSS(element, css) {
+      for (var key in css) {
+        var value = css[key];
+        element.style[key] = value;
+      }
+    }
+  }, {
+    key: "setAnimationPower",
+    value: function setAnimationPower(element, time) {
+      this.modifyCSS(element, {
+        transition: "all ".concat(time, "s ease"),
+        webkitTransition: "all ".concat(time, "s ease"),
+        mozTransition: "all ".concat(time, "s ease"),
+        msTransition: "all ".concat(time, "s ease"),
+        oTransition: "all ".concat(time, "s ease")
+      });
     }
   }]);
 

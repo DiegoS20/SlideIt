@@ -9,11 +9,6 @@ class SlideIt
             height: '35vh',
             minHeight: '150px',
             overflow: 'hidden',
-            transition: "all 0.3s ease",
-            webkitTransition: "all 0.3s ease",
-            mozTransition: "all 0.3s ease",
-            msTransition: "all 0.3s ease",
-            oTransition: "all 0.3s ease",
         });
 
         if (this.container === null) { // Validating the container of the sliders exists
@@ -24,8 +19,10 @@ class SlideIt
         if (children.length > 0) {
             if (Object.keys(options).length > 0) {
                 this.coupleOptions(options);
+                this.execFunctionOfValuesChanged(this.options);
             }
             this.createSlides(children);
+            this.animateSlides(children);
         }
     }
 
@@ -49,12 +46,13 @@ class SlideIt
             let cssStyles = {
                 width: this.options[1].value,
                 height: this.options[2].value,
-                position: 'absolute'
+                position: 'absolute',
             };
             if (child !== children[0]) {
                 cssStyles.left = `${100 * slideDisplacement++}%`;
             }
             this.modifyCSS(child, cssStyles);
+            this.setAnimationPower(child, 0.3);
         }
         this.createSlidesControls(this.container);
     }
@@ -76,11 +74,42 @@ class SlideIt
         }
     }
 
-    modifyCSS(element, css) {
-        for(const key in css) {
-            const value = css[key];
-            element.style[key] = value;
+    animateSlides(slides) {
+        const time = this.options[5].value * 1000;
+        this.animateInterval = setInterval(() => {
+            for (const slide of slides) {
+                const slideCSS = slide.style;
+                const leftValue = slideCSS.left == "" ? 0 : parseInt(slideCSS.left);
+                if (leftValue < 0) {
+                    this.setAnimationPower(slide, 0);
+                    this.modifyCSS(slide, { left: `${100 * (slides.length - 2)}%` });
+                    this.setAnimationPower(slide, 0.3);
+                    continue;
+                }
+                const position = leftValue;
+                slideCSS.left = `${position - 100}%`;
+            }
+        }, time);
+    }
+
+    stopSlidesAnimation() {
+        clearInterval(this.animateInterval);
+    }
+
+    execFunctionOfValuesChanged(options) {
+        const ops = this.valuesChangedByUser(options);
+        ops.forEach(op => {
+            op.onValueChanged(op.value);
+        });
+    }
+
+    valuesChangedByUser(options) {
+        let r = [];
+        for(let i = 0; i < options.length; i++) {
+            const option = options[i];
+            if (option.changedByUser) r.push(option); 
         }
+        return r;
     }
 
     declareInitialOptions() {
@@ -104,7 +133,38 @@ class SlideIt
                 name: "slidesControls",
                 value: 'default',
                 changedByUser: false,
+            },
+            {
+                name: "animateByItself",
+                value: true,
+                changedByUser: false,
+                onValueChanged: (newValue) => {
+                    
+                }
+            },
+            {
+                name: "animationIntervalTime",
+                value: 3,
+                changedByUser: false,
             }
         ];
+    }
+
+    // Auxiliar functions
+    modifyCSS(element, css) {
+        for (const key in css) {
+            const value = css[key];
+            element.style[key] = value;
+        }
+    }
+
+    setAnimationPower(element, time) {
+        this.modifyCSS(element, {
+            transition: `all ${time}s ease`,
+            webkitTransition: `all ${time}s ease`,
+            mozTransition: `all ${time}s ease`,
+            msTransition: `all ${time}s ease`,
+            oTransition: `all ${time}s ease`,
+        });
     }
 }
