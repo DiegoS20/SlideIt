@@ -6,11 +6,22 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="d"></div>
+    <div id="d">
+        <div class="slide">
+            Hola
+        </div>
+        <div class="slide">
+            Adiós
+        </div>
+        <div class="slide">
+            ¿Qué tal?
+        </div>
+    </div>
+
     <script src="../../build/slideit.js"></script>
     <script>
         const s = new SlideIt("d", {
-            fullPage: true,
+            fullScreenSize: true,
         });
     </script>
 </body>
