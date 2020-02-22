@@ -37,11 +37,11 @@ function () {
     if (children.length > 0) {
       if (Object.keys(options).length > 0) {
         this.coupleOptions(options);
-        this.execFunctionOfValuesChanged(this.options);
       }
 
       this.createSlides(children);
       this.animateSlides(children);
+      this.execFunctionOfValuesChanged(this.options);
     }
   }
 
@@ -123,12 +123,6 @@ function () {
     key: "animateSlides",
     value: function animateSlides(slides) {
       var _this = this;
-
-      var _animateSlides = this.options[4].value;
-
-      if (!_animateSlides) {
-        return;
-      }
 
       var time = this.options[5].value * 1000;
       this.animateInterval = setInterval(function () {
@@ -257,7 +251,10 @@ function () {
       }, {
         name: "animateByItself",
         value: true,
-        changedByUser: false
+        changedByUser: false,
+        onValueChanged: function onValueChanged() {
+          _this2.stopSlidesAnimation(_this2.animateInterval);
+        }
       }, {
         name: "animationIntervalTime",
         value: 3,

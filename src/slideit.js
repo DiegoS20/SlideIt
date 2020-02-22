@@ -19,10 +19,10 @@ class SlideIt
         if (children.length > 0) {
             if (Object.keys(options).length > 0) {
                 this.coupleOptions(options);
-                this.execFunctionOfValuesChanged(this.options);
             }
             this.createSlides(children);
             this.animateSlides(children);
+            this.execFunctionOfValuesChanged(this.options);
         }
     }
 
@@ -75,8 +75,6 @@ class SlideIt
     }
 
     animateSlides(slides) {
-        const _animateSlides = this.options[4].value;
-        if (!_animateSlides) { return; }
         const time = this.options[5].value * 1000;
         this.animateInterval = setInterval(() => {
             for (const slide of slides) {
@@ -173,6 +171,9 @@ class SlideIt
                 name: "animateByItself",
                 value: true,
                 changedByUser: false,
+                onValueChanged: () => {
+                    this.stopSlidesAnimation(this.animateInterval);
+                }
             },
             {
                 name: "animationIntervalTime",
