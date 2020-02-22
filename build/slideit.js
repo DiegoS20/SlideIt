@@ -72,8 +72,8 @@ function () {
         for (var _iterator = children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var child = _step.value;
           var cssStyles = {
-            width: this.options[1].value,
-            height: this.options[2].value,
+            width: "100%",
+            height: "100%",
             position: 'absolute'
           };
 
@@ -124,6 +124,12 @@ function () {
     value: function animateSlides(slides) {
       var _this = this;
 
+      var _animateSlides = this.options[4].value;
+
+      if (!_animateSlides) {
+        return;
+      }
+
       var time = this.options[5].value * 1000;
       this.animateInterval = setInterval(function () {
         var _iteratorNormalCompletion2 = true;
@@ -139,9 +145,7 @@ function () {
             if (leftValue < 0) {
               _this.setAnimationPower(slide, 0);
 
-              _this.modifyCSS(slide, {
-                left: "".concat(100 * (slides.length - 2), "%")
-              });
+              slideCSS.left = "".concat(100 * (slides.length - 2), "%");
 
               _this.setAnimationPower(slide, 0.3);
 
@@ -177,7 +181,11 @@ function () {
     value: function execFunctionOfValuesChanged(options) {
       var ops = this.valuesChangedByUser(options);
       ops.forEach(function (op) {
-        op.onValueChanged(op.value);
+        var opFunc = op.onValueChanged;
+
+        if (opFunc) {
+          opFunc(op.value);
+        }
       });
     }
   }, {
@@ -195,27 +203,61 @@ function () {
   }, {
     key: "declareInitialOptions",
     value: function declareInitialOptions() {
+      var _this2 = this;
+
       this.options = [{
         name: "fullScreenSize",
         value: false,
-        changedByUser: false
+        changedByUser: false,
+        onValueChanged: function onValueChanged() {
+          var slidesWidthChanged = _this2.options[1].changedByUser;
+          var slidesHeightChanged = _this2.options[2].changedByUser;
+          if (slidesWidthChanged || slidesHeightChanged) return;
+
+          _this2.modifyCSS(_this2.container, {
+            width: "100vw",
+            height: "100vh"
+          });
+        }
       }, {
         name: "slidesWidth",
         value: "100%",
-        changedByUser: false
+        changedByUser: false,
+        onValueChanged: function onValueChanged(newValue) {
+          if (_this2.options[0].changedByUser) return;
+
+          var isNumber = _this2.isNumber(newValue);
+
+          var measure = isNumber ? "".concat(newValue, "%") : newValue;
+
+          _this2.modifyCSS(_this2.container, {
+            width: measure
+          });
+        }
       }, {
         name: "slidesHeight",
         value: "100%",
-        changedByUser: false
+        changedByUser: false,
+        onValueChanged: function onValueChanged(newValue) {
+          if (_this2.options[0].changedByUser) return;
+
+          var isNumber = _this2.isNumber(newValue);
+
+          var measure = isNumber ? "".concat(newValue, "%") : newValue;
+
+          _this2.modifyCSS(_this2.container, {
+            height: measure
+          });
+        }
       }, {
         name: "slidesControls",
         value: 'default',
-        changedByUser: false
+        changedByUser: false,
+        onValueChanged: function onValueChanged(newValue) {}
       }, {
         name: "animateByItself",
         value: true,
-        changedByUser: false,
-        onValueChanged: function onValueChanged(newValue) {}
+        changedByUser: false
       }, {
         name: "animationIntervalTime",
         value: 3,
@@ -241,6 +283,21 @@ function () {
         msTransition: "all ".concat(time, "s ease"),
         oTransition: "all ".concat(time, "s ease")
       });
+    }
+  }, {
+    key: "isNumber",
+    value: function isNumber(number) {
+      var nums = "123456789";
+
+      for (var i = 0; i < number.length; i++) {
+        var _i = number.charAt(i);
+
+        if (nums.indexOf(_i) === -1) {
+          return false;
+        }
+      }
+
+      return true;
     }
   }]);
 

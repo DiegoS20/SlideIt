@@ -44,8 +44,8 @@ class SlideIt
         let slideDisplacement = 1;
         for (const child of children) {
             let cssStyles = {
-                width: this.options[1].value,
-                height: this.options[2].value,
+                width: "100%",
+                height: "100%",
                 position: 'absolute',
             };
             if (child !== children[0]) {
@@ -75,6 +75,8 @@ class SlideIt
     }
 
     animateSlides(slides) {
+        const _animateSlides = this.options[4].value;
+        if (!_animateSlides) { return; }
         const time = this.options[5].value * 1000;
         this.animateInterval = setInterval(() => {
             for (const slide of slides) {
@@ -82,7 +84,7 @@ class SlideIt
                 const leftValue = slideCSS.left == "" ? 0 : parseInt(slideCSS.left);
                 if (leftValue < 0) {
                     this.setAnimationPower(slide, 0);
-                    this.modifyCSS(slide, { left: `${100 * (slides.length - 2)}%` });
+                    slideCSS.left = `${100 * (slides.length - 2)}%`;
                     this.setAnimationPower(slide, 0.3);
                     continue;
                 }
@@ -99,7 +101,10 @@ class SlideIt
     execFunctionOfValuesChanged(options) {
         const ops = this.valuesChangedByUser(options);
         ops.forEach(op => {
-            op.onValueChanged(op.value);
+            const opFunc = op.onValueChanged;
+            if (opFunc) {
+                opFunc(op.value);
+            }
         });
     }
 
@@ -117,30 +122,57 @@ class SlideIt
             {
                 name: "fullScreenSize",
                 value: false,
-                changedByUser: false
+                changedByUser: false,
+                onValueChanged: () => {
+                    const slidesWidthChanged = this.options[1].changedByUser;
+                    const slidesHeightChanged = this.options[2].changedByUser;
+                    if (slidesWidthChanged || slidesHeightChanged) return;
+                    this.modifyCSS(this.container, {
+                        width: "100vw",
+                        height: "100vh",
+                    });
+                }
             },
             {
                 name: "slidesWidth",
                 value: "100%",
-                changedByUser: false
+                changedByUser: false,
+                onValueChanged: newValue => {
+                    if (this.options[0].changedByUser) return;
+
+                    const isNumber = this.isNumber(newValue);
+                    const measure = isNumber ? `${newValue}%` : newValue;
+                    this.modifyCSS(this.container, {
+                        width: measure,
+                    });
+                }
             },
             {
                 name: "slidesHeight",
                 value: "100%",
-                changedByUser: false
+                changedByUser: false,
+                onValueChanged: newValue => {
+                    if (this.options[0].changedByUser) return;
+
+                    const isNumber = this.isNumber(newValue);
+                    const measure = isNumber ? `${newValue}%` : newValue;
+                    this.modifyCSS(this.container, {
+                        height: measure,
+                    });
+                }
             },
             {
                 name: "slidesControls",
                 value: 'default',
                 changedByUser: false,
+                onValueChanged: newValue => {
+
+                }
             },
             {
                 name: "animateByItself",
                 value: true,
                 changedByUser: false,
-                onValueChanged: (newValue) => {
-                    
-                }
             },
             {
                 name: "animationIntervalTime",
@@ -166,5 +198,16 @@ class SlideIt
             msTransition: `all ${time}s ease`,
             oTransition: `all ${time}s ease`,
         });
+    }
+
+    isNumber(number) {
+        const nums = "123456789";
+        for (let i = 0; i < number.length; i++) {
+            const _i = number.charAt(i);
+            if (nums.indexOf(_i) === -1) {
+                return false;
+            }
+        }
+        return true;
     }
 }
