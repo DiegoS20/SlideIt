@@ -19,20 +19,20 @@ function () {
     this.declareInitialOptions(); // Declaring properties
 
     this.container = document.getElementById(container_id);
-    this.modifyCSS(this.container, {
-      position: 'relative',
-      width: '100%',
-      height: '35vh',
-      minHeight: '150px',
-      overflow: 'hidden'
-    });
 
-    if (this.container === null) {
-      // Validating the container of the sliders exists
+    if (!this.container) {
+      /* Validating the container of the sliders exists */
       throw new Error("The especified container id is not in the DOM.");
     }
 
-    var children = this.container.getElementsByClassName('slide');
+    this.modifyCSS(this.container, {
+      position: "relative",
+      width: "100%",
+      height: "35vh",
+      minHeight: "150px",
+      overflow: "hidden"
+    });
+    var children = this.container.getElementsByClassName("slide");
 
     if (children.length > 0) {
       if (Object.keys(options).length > 0) {
@@ -74,7 +74,7 @@ function () {
           var cssStyles = {
             width: "100%",
             height: "100%",
-            position: 'absolute'
+            position: "absolute"
           };
 
           if (child !== children[0]) {
@@ -107,18 +107,18 @@ function () {
       var controlsValue = this.options[3].value;
 
       for (var i = 0; i < 2; i++) {
-        var position = i === 0 ? "right" : "left";
-        var control = document.createElement('div');
-        control.classList.add('controls');
+        var position = !i ? "right" : "left";
+        var control = document.createElement("div");
+        control.classList.add("controls");
         this.modifyCSS(control, _defineProperty({
-          width: '5%',
-          height: '100%',
+          width: "5%",
+          height: "100%",
           top: 0,
-          position: 'absolute'
+          position: "absolute"
         }, position, 0));
-        var arrow = document.createElement('div');
+        var arrow = document.createElement("div");
         var pseudoBefore = {
-          content: '',
+          content: "",
           width: "100%",
           height: "100%",
           borderWidth: "6.67px 6.67px 0 0",
@@ -128,7 +128,7 @@ function () {
           transformOrigin: "100% 0"
         };
         var pseudoAfter = {
-          content: '',
+          content: "",
           "float": "left",
           position: "relative",
           top: "-100%",
@@ -178,8 +178,7 @@ function () {
               continue;
             }
 
-            var position = leftValue;
-            slideCSS.left = "".concat(position - 100, "%");
+            slideCSS.left = "".concat(leftValue - 100, "%");
           }
         } catch (err) {
           _didIteratorError2 = true;
@@ -277,7 +276,7 @@ function () {
         }
       }, {
         name: "slidesControls",
-        value: 'default',
+        value: "default",
         changedByUser: false,
         onValueChanged: function onValueChanged(newValue) {}
       }, {
@@ -317,20 +316,20 @@ function () {
       if (Object.keys(pseudos).length > 0) {
         element.id = "id-".concat(this.generateUniqID());
         var pseudoNamesValues = Object.entries(pseudos);
-        var cssContainer = this.container.querySelector('.styles-container');
+        var cssContainer = this.container.querySelector(".styles-container");
 
         if (!cssContainer) {
-          cssContainer = document.createElement('div');
-          cssContainer.classList.add('styles-container');
+          cssContainer = document.createElement("div");
+          cssContainer.classList.add("styles-container");
           this.container.append(cssContainer);
         }
 
-        var styleTag = document.createElement('style');
+        var styleTag = document.createElement("style");
         pseudoNamesValues.forEach(function (pseudo) {
           styleTag.innerHTML += "#".concat(element.id, "::").concat(pseudo[0], " {\n");
           var stylesKeys = Object.keys(pseudo[1]);
           stylesKeys.forEach(function (key) {
-            styleTag.innerHTML += "  ".concat(_this3.convertToCSSInstructionFromat(key), ": ").concat(pseudo[1][key] == '' ? "" : pseudo[1][key], ";\n");
+            styleTag.innerHTML += "  ".concat(_this3.convertToCSSInstructionFromat(key), ": ").concat(pseudo[1][key] == "" ? "" : pseudo[1][key], ";\n");
           });
           styleTag.innerHTML += "}\n";
         });
@@ -366,15 +365,12 @@ function () {
   }, {
     key: "generateUniqID",
     value: function generateUniqID() {
-      var nums = "0123456789";
       var now = new Date().toLocaleString();
       var nowNumbers = "";
 
       for (var i = 0; i < now.length; i++) {
-        var number = now.charAt(i);
-
-        if (nums.indexOf(number) !== -1) {
-          nowNumbers += number;
+        if (this.isNumber(now.charAt(i))) {
+          nowNumbers += now.charAt(i);
         }
       }
 
