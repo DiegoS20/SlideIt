@@ -107,7 +107,7 @@ function () {
       var controlsValue = this.options[3].value;
 
       for (var i = 0; i < 2; i++) {
-        var position = i == 0 ? "r" : "l";
+        var position = i === 0 ? "right" : "left";
         var control = document.createElement('div');
         control.classList.add('controls');
         this.modifyCSS(control, _defineProperty({
@@ -115,7 +115,39 @@ function () {
           height: '100%',
           top: 0,
           position: 'absolute'
-        }, position === 'r' ? "right" : "left", 0));
+        }, position, 0));
+        var arrow = document.createElement('div');
+        var pseudoBefore = {
+          content: '',
+          width: "100%",
+          height: "100%",
+          borderWidth: "6.67px 6.67px 0 0",
+          borderStyle: "solid",
+          borderColor: "#000",
+          display: "block",
+          transformOrigin: "100% 0"
+        };
+        var pseudoAfter = {
+          content: '',
+          "float": "left",
+          position: "relative",
+          top: "-100%",
+          width: "100%",
+          height: "100%",
+          borderWidth: "0 6.67px 0 0",
+          borderStyle: "solid",
+          borderColor: "#000",
+          transformOrigin: "100% 0",
+          transition: ".2s ease"
+        };
+        this.modifyCSS(arrow, {
+          width: "50px",
+          height: "50px",
+          position: "absolute"
+        }, {
+          before: pseudoBefore,
+          after: pseudoAfter
+        });
         container.appendChild(control);
       }
     }
@@ -265,9 +297,44 @@ function () {
   }, {
     key: "modifyCSS",
     value: function modifyCSS(element, css) {
+      var _this3 = this;
+
+      var pseudos = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      if (!(css instanceof Object)) {
+        throw new Error("CSS parameter is not defined as an key => value Object");
+      }
+
       for (var key in css) {
         var value = css[key];
         element.style[key] = value;
+      }
+
+      if (!(pseudos instanceof Object)) {
+        throw new Error("Pseudos parameter is not defined as an key => value Object");
+      }
+
+      if (Object.keys(pseudos).length > 0) {
+        element.id = "id-".concat(this.generateUniqID());
+        var pseudoNamesValues = Object.entries(pseudos);
+        var cssContainer = this.container.querySelector('.styles-container');
+
+        if (!cssContainer) {
+          cssContainer = document.createElement('div');
+          cssContainer.classList.add('styles-container');
+          this.container.append(cssContainer);
+        }
+
+        var styleTag = document.createElement('style');
+        pseudoNamesValues.forEach(function (pseudo) {
+          styleTag.innerHTML += "#".concat(element.id, "::").concat(pseudo[0], " {\n");
+          var stylesKeys = Object.keys(pseudo[1]);
+          stylesKeys.forEach(function (key) {
+            styleTag.innerHTML += "  ".concat(_this3.convertToCSSInstructionFromat(key), ": ").concat(pseudo[1][key] == '' ? "" : pseudo[1][key], ";\n");
+          });
+          styleTag.innerHTML += "}\n";
+        });
+        cssContainer.append(styleTag);
       }
     }
   }, {
@@ -284,7 +351,7 @@ function () {
   }, {
     key: "isNumber",
     value: function isNumber(number) {
-      var nums = "123456789";
+      var nums = "0123456789";
 
       for (var i = 0; i < number.length; i++) {
         var _i = number.charAt(i);
@@ -295,6 +362,42 @@ function () {
       }
 
       return true;
+    }
+  }, {
+    key: "generateUniqID",
+    value: function generateUniqID() {
+      var nums = "0123456789";
+      var now = new Date().toLocaleString();
+      var nowNumbers = "";
+
+      for (var i = 0; i < now.length; i++) {
+        var number = now.charAt(i);
+
+        if (nums.indexOf(number) !== -1) {
+          nowNumbers += number;
+        }
+      }
+
+      nowNumbers += parseInt(Math.random() * 100).toString();
+      return parseInt(nowNumbers).toString(16);
+    }
+  }, {
+    key: "convertToCSSInstructionFromat",
+    value: function convertToCSSInstructionFromat(cssInstruction) {
+      var upperLetters = "QWERTYUIOPASDFGHJKLZXCVBNM";
+      var cssInstructionConverted = "";
+
+      for (var i = 0; i < cssInstruction.length; i++) {
+        var letter = cssInstruction.charAt(i);
+
+        if (upperLetters.indexOf(letter) === -1) {
+          cssInstructionConverted += letter;
+        } else {
+          cssInstructionConverted += "-".concat(letter.toLowerCase());
+        }
+      }
+
+      return cssInstructionConverted;
     }
   }]);
 
